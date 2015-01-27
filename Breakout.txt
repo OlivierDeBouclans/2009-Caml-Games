@@ -1,0 +1,92 @@
+#open "graphics";;
+#open "sys";;
+
+let r=10;;
+let pasx,pasy=ref 1, ref 1;;
+let mx,my =ref 0, ref 0;;
+let vie,t =ref 3,ref 0;; 
+
+let temp=ref [];;197;;
+for l=0 to 8 do
+for k=0 to 10 do
+temp:=(100+k*50)::(!temp); temp:=(450-l*20)::(!temp); done; done;;
+let bloc=ref (vect_of_list !temp);; 
+
+let balle x y co=
+set_color co;
+fill_circle x y r;;
+
+let rect la lo x y =
+moveto x y;
+lineto x (y+lo);
+lineto (x+la) (y+lo);
+lineto (x+la) y;
+lineto x y;;
+
+let barre () =
+let (x,y)=mouse_pos() in
+mx:=x; my:=y;
+set_color white;
+fill_rect 13 13 730 13;
+set_color green;
+if (!mx) <25  then mx:=25  else ();
+if (!mx) >635 then mx:=635 else ();
+rect 90 12 (!mx) 13;
+fill_rect (!mx) 13 88 11;;
+
+let life () =
+set_color black;
+moveto 735 500;
+match (!vie) with
+|3->draw_string "x3"
+|2->draw_string "x2"
+|1->draw_string "x1"
+|0->draw_string "x0"
+|x->();;
+
+let wait t =
+let a=time() in
+while time() -. a < t do () done;;
+
+let rec mvt x y =
+balle (x- !pasx) (y- !pasy) white;
+balle x y blue;
+barre ();
+wait 0.004;
+if x>=715 || x<37 then begin pasx:=0 - (!pasx); sound 755 20; end else ();
+if y>=513 || y<10 then begin pasy:=0 - (!pasy); sound 755 20; end else ();
+if (y < 37) && ( !mx < x ) && (x < ( !mx + 90) ) then begin pasy:=0 - (!pasy); sound 455 20; end else ();
+if (y < 37) && ( !mx = x || x = ( !mx + 90) ) then begin pasy:=0-(!pasy);  
+                                                         pasx:=0-(!pasx); sound 455 20; 
+                                                         balle x y white; 
+                                                         mvt (x+ 20*(!pasx)) (y+ 5*(!pasy)); end else ();
+if y < 10 then begin vie:=(!vie)-1; life(); sound 266 200; end else ();
+for k=0 to 197 do
+if (k mod 2) = 1 then () else
+if  (x-r >= !bloc.(k+1) && x-r <= !bloc.(k+1) + 49 && y-r <= !bloc.(k) && y-r >= !bloc.(k) - 19) || (x-r >= !bloc.(k+1) && x-r <= !bloc.(k+1) + 49 && y+r <= !bloc.(k) && y+r >= !bloc.(k) - 19) || (x+r >= !bloc.(k+1) && x+r <= !bloc.(k+1) + 49 && y-r <= !bloc.(k) && y-r >= !bloc.(k) - 19) || (x+r >= !bloc.(k+1) && x+r <= !bloc.(k+1) + 49 && y+r <= !bloc.(k) && y+r >= !bloc.(k) - 19) then
+begin sound 400 20; set_color white; fill_rect !bloc.(k+1) !bloc.(k) 50 20;  
+if (x-r) = !bloc.(k+1) + 48 || (x+r) = !bloc.(k+1) then pasx:=0 - !pasx else ();
+if (y+r) = !bloc.(k) - 19 || (y-r) = !bloc.(k) then pasy:=0 - !pasy else (); !bloc.(k)<-0; !bloc.(k+1)<-0; end; done;
+t:=1; for k=0 to 197 do if !bloc.(k)<>0 then t:=0 else () done; if !t = 1 then vie:=-2 else ();
+match (!vie) with
+|(-2)->begin sound 100 100; sound 200 100; sound 300 100; sound 100 100; sound 200 100; sound 300 100;end;
+|(-1)->begin sound 300 100; sound 200 100; sound 100 100; sound 300 100; sound 200 100; sound 100 100;end;
+|  q ->mvt (x+ !pasx) (y+ !pasy);;
+
+let play () =
+for k=1 to 10 do sound (100*k) 100 done;
+open_graph "800x600";
+rect 700 500 25 25;
+set_color red;
+for l=0 to 8 do
+for k=0 to 10 do
+set_color black;
+rect 49 19 (100+k*50) (450-l*20);
+set_color red;
+fill_rect (101+k*50) (451-l*20) 47 17; 
+done; done;
+life();
+mvt 250 250;
+close_graph;;
+
+play();;
