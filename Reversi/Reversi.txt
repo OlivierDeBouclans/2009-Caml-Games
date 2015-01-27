@@ -51,7 +51,7 @@ fait_case x y  coul_cadre coul_fond ;
 set_color coul_pion ;
 fill_circle (x+ dim_cote/2)  (y+dim_cote/2) dim_rayon ;
 set_color coul_reflet ;
-draw_circle (x+ dim_cote/2)  (y+dim_cote/2) (dim_rayon-2) ;;  
+draw_arc (x+ dim_cote/2)  (y+dim_cote/2) (dim_rayon-3) (dim_rayon-3)  90 180 ;;  
  (*Affichage de la case (i,j) *)
 let affiche_case plateau i j=
 let x,y=((i*dim_cote+x0),(j*dim_cote+y0)) in
@@ -76,6 +76,10 @@ let rec affiche_pas_coup = function
 |(i,j) ::l->fait_case (x0+dim_cote*i) (y0+dim_cote*j) coul_cadre coul_fond ;
                 affiche_pas_coup l ;;
 (*Fonctions de manipulation du plateau************************************************)
+(*Elément dans une liste*)
+let rec dans = fun
+|a []-> false
+|a (b::l)->a=b || (dans a l) ;;
 (*Possibilité d’une ligne*)
 let ligne plateau coul1 i j k l=
 let coul2=ref Noir in if coul1=Noir then coul2:=Blanc;
@@ -84,8 +88,10 @@ if k>7 || l>7 || k<0 || l<0 then bool:=false else
 if plateau.(k).(l) <>  !coul2 then bool:=false else
 begin
 let rec aux = fun
-|7 j2->false
-|i2 7->false
+|8 j2-> false
+|i2 8->false
+|(-1) j2-> false
+|i2 (-1)->false
 |i2 j2->if plateau.(i2).(j2)=coul1 then true else
              if plateau.(i2).(j2)=Vide then false else
                                                                  aux (i2+k-i) (j2+l-j) in
@@ -108,6 +114,61 @@ let rec aux = fun
 |i 7-> if (possible plateau coul1 i 7) then (i,7)::(aux (i+1) 0) else (aux (i+1) 0)
 |i j -> if (possible plateau coul1 i j) then (i,j)::(aux i (j+1)) else (aux i (j+1))       in
 aux 0 0;;   
+(*Calcul du score*)
+let score plateau=
+let b,n=ref 0,ref 0 in
+for i=0 to 7 do
+for j=0 to 7 do
+   if plateau.(i).(j)=Noir then incr n else if plateau.(i).(j)=Blanc then incr b;
+done; done;
+(!b,!n);;
+(*Affichage du score*)
+let affiche_score plateau=
+let b,n=score plateau in
+set_color coul_blanc;
+fill_rect (x0+dim_nbcase*dim_cote+3) (y0+dim_nbcase*dim_cote-20) 100 20;
+set_color coul_noir;
+fill_rect (x0+dim_nbcase*dim_cote+3) (y0+dim_nbcase*dim_cote -45) 100 20;
+set_color coul_noir;
+moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 20);
+draw_string ((string_of_int b)^“ blanc(s)”);
+moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote-45);
+draw_string ((string_of_int n)^“ noir(s) ”);;
+(*Affichage du tour*)
+let affiche_tour coul=
+let couleur=ref coul_blanc in
+if coul=Noir then couleur :=  coul_noir ;
+set_color coul_noir;
+moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 70);
+draw_string (“C’est aux »);
+set_color !couleur;
+fill_rect  (x0+dim_nbcase*dim_cote+90) (y0+dim_nbcase*dim_cote- 69) 15 15;; 
+ (*Application d’une ligne *)
+let fait_ligne coul1 coul2 i  j k l=
+if (ligne Plateau coul1 i j k l) then begin
+let i2,j2=ref k, ref l in
+Plateau.(i).(j)<-coul1;
+while Plateau.(!i2).(!j2)=coul2 do
+Plateau.(!i2).(!j2)<-coul1;
+i2:= !i2 +k-i; j2:= !j2 +l-j;
+done; end;;
+(*Application d’un coup*)
+let fait_coup plateau coul1 i j=
+let coul2=ref Noir in if coul1=Noir then coul2:=Blanc;
+for k= -1 to 1 do
+for l= -1 to 1 do
+     fait_ligne coul1 (!coul2) i j (i+k) (j+l);
+done; done;;
+(*Vérification de victoire*)
+let victoire plateau = 
+ let gagnant=ref (false,Vide) in
+let b,n=score plateau in
+if ((coup plateau Noir),(coup plateau Blanc))=([],[]) then begin
+                                                                     if b>n then gagnant:=(true,Blanc) 
+                                                            else  if b<n then gagnant:=(true,Noir)
+                                                            else                      gagnant:=(true,Vide);
+                                                                      end ;
+!gagnant ;;
 (*Clique d’une case du plateau*)
 let cliquer plateau coul1 list= 
      let case=ref (0,0) in
@@ -136,11 +197,20 @@ else if plateau.(fst !case).(snd !case)=Noir then
          fait_pion ((fst !case)*dim_cote+x0) ((snd !case)*dim_cote+y0) coul_cadre coul_surlignage coul_noir
 else if plateau.(fst !case).(snd !case)=Blanc then
          fait_pion ((fst !case)*dim_cote+x0) ((snd !case)*dim_cote+y0) coul_cadre coul_surlignage coul_blanc;
-       (*Si la case est vide*)
-         if plateau.(fst !case).(snd !case)=Vide then
                  begin
                 (*Si on appuie sur une touche*)
-                 if !attend.keypressed then begin (affiche_coup list); let a=wait_next_event[Key_pressed] in (affiche_pas_coup list); end 
+                 if !attend.keypressed then begin
+                                                                    if !attend.key <> `\027` then begin
+                                                                                                      affiche_case  plateau (fst !case) (snd !case);
+                                                                                                     (affiche_coup list); 
+                                                                                                    let a=wait_next_event[Key_pressed] in 
+                                                                                                    (affiche_pas_coup list);
+                                                                                                        end
+                                                                  else begin
+                                                                          close_graph();
+                                                                          failwith « Merci d’avoir joué » ;
+                                                                          end;
+                                                                  end 
                 (*Si on clique sur une valide*)
                  else if !attend.button && plateau.(fst !case).(snd !case)=Vide then 
                        begin
@@ -151,20 +221,31 @@ else if plateau.(fst !case).(snd !case)=Blanc then
                         if case2 = !case then  
                            begin
                              sound 120 10;
-                             mauvais_clique:=false;
+                             if (dans !case list) then begin
+                                                                       fait_coup plateau coul1 (fst !case) (snd !case) ; 
+                                                                       mauvais_clique:=false;
+                                                                        end ;
                            end;
-                       end
-               else fait_case ((fst !case)*dim_cote+x0) ((snd !case)*dim_cote+y0) coul_cadre coul_surlignage;
+                       end;
             end;
-    end
-done;
-(fst !case,snd !case);;
+    end else affiche_case plateau (fst !case) (snd !case);
+done;;
 
 (*********************Fonction du jeu*)
 let test ()=
+open_graph "";
+close_graph ();
 open_graph "800x600+200+100";
-affiche_plateau Plateau ;
-cliquer Plateau Blanc (coup Plateau Blanc) ;
+let tour=ref Noir in
+while not (fst (victoire Plateau)) do
+if !tour=Noir then tour:=Blanc else tour:=Noir;
+if (coup Plateau !tour)=[] then if !tour=Noir then tour:=Blanc else tour:=Noir;
+affiche_tour !tour ;
+  affiche_plateau Plateau ;
+affiche_score Plateau;
+cliquer Plateau !tour (coup Plateau !tour) ;
+done ;
 close_graph();;
 
 test() ;;
+
