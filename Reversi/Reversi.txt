@@ -233,7 +233,38 @@ else if plateau.(fst !case).(snd !case)=Blanc then
             end;
     end else affiche_case plateau (fst !case) (snd !case);
 done;;
- (*Fonctions de manipulation du plateau************************************************)
+(*Fonctions de manipulation du plateau************************************************)
+(*IA de niveau 1***************************************************)
+ (*Compte des points d’une ligne*)
+let compte_ligne coul1 coul2 i  j k l=
+let pt=ref 0 in
+if (ligne Plateau coul1 i j k l) then begin
+incr pt;
+let i2,j2=ref k, ref l in
+while Plateau.(!i2).(!j2)=coul2 do
+incr pt;
+i2:= !i2 +k-i; j2:= !j2 +l-j;
+done; end; !pt ;;
+(*Compte des points d’un coup *)
+let compte_coup plateau coul1 i j=
+let coul2=ref Noir in if coul1=Noir then coul2:=Blanc;
+let pt=ref 0 in
+for k= -1 to 1 do
+for l= -1 to 1 do
+     pt:= !pt + (compte_ligne coul1 (!coul2) i j (i+k) (j+l));
+done; done; !pt;;
+(*Choix du coup*)
+let case_IA1 plateau coul1=
+let coul2=ref Noir in if coul1=Noir then coul2:=Blanc;
+let rec aux = fun
+|a (k,l) []->(k,l)
+|a (k,l) ((i,j)::lf)->let b=(compte_coup plateau coul1 i j) in
+                           if a<b then (aux b (i,j) lf) else (aux a (k,l) lf)  in
+let (i,j)=(aux 0 (-1,-1) (coup plateau coul1)) in
+fait_coup plateau coul1 i j ;;
+
+
+(*Fonctions de manipulation du plateau************************************************)
 (*Réinisialisation du plateau*)
 let init ()=
 for i=0 to (dim_nbcase-1) do
@@ -279,6 +310,41 @@ else  begin
         end;                                                  
 let a=wait_next_event[Key_pressed] in
 close_graph();;
+(*Fonction du jeu*)
+let othello_IA1 ()=
+open_graph "";
+close_graph ();
+open_graph "800x600+200+100";
+let tour=ref Noir in
+while not (fst (victoire Plateau)) do
+if !tour=Noir then tour:=Blanc else tour:=Noir;
+if (coup Plateau !tour)=[] then if !tour=Noir then tour:=Blanc else tour:=Noir;
+affiche_tour !tour ;
+  affiche_plateau Plateau ;
+affiche_score Plateau;
+if !tour=Blanc then cliquer Plateau !tour (coup Plateau !tour) 
+else case_IA1 Plateau !tour ;
+done ;
+  affiche_plateau Plateau ;
+affiche_score Plateau;
+if (snd (victoire Plateau))<>Vide then begin
+                                                          set_color black;
+                                                 moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 100);
+                                                         draw_string («Victoire aux     !!!»);                                 
+                                                       if (snd (victoire Plateau))=Noir then
+                                                               begin          
+                                                               set_color coul_noir;
+                           fill_rect  (x0+dim_nbcase*dim_cote+120) (y0+dim_nbcase*dim_cote- 100) 15 15; end
+                                                       else begin          
+                                                               set_color coul_blanc;
+                         fill_rect  (x0+dim_nbcase*dim_cote+120) (y0+dim_nbcase*dim_cote- 100) 15 15; end;
+                          end
+else  begin
+         set_color black;
+         moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 40);
+         draw_string (« Il y a égalité !!!  »)
+        end;                                                  
+let a=wait_next_event[Key_pressed] in
+close_graph();;
 
-othello_2joueurs () ;;
-
+othello_IA1 ();;
