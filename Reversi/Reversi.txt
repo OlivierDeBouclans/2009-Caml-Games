@@ -9,7 +9,9 @@ type case = Noir | Blanc | Vide;;
 (*couleur des cadres des cases du tableau*)(*noir*)
 let coul_cadre=rgb 0 0 0;;                  
 (*couleur du fond des cases du tableau*)(*vert foncé*)
-let coul_fond=rgb 0 128 0;;               
+let coul_fond=rgb 0 128 0;; 
+(*couleur du fond des cases en erreur*)(*rouge foncé*)
+let coul_erreur=rgb 128 0 0;;                             
 (*couleur des reflets des pions*)(*blanc*)
 let coul_reflet= rgb 255 255 255;;    
 (*couleur du sur lignage des cases*)(*vert clair*)
@@ -220,19 +222,30 @@ else if plateau.(fst !case).(snd !case)=Blanc then
                        let case2=((x2 quo dim_cote), (y2 quo dim_cote)) in
                         if case2 = !case then  
                            begin
-                             sound 120 10;
                              if (dans !case list) then begin
+                                                                      sound 6000 20;
                                                                        fait_coup plateau coul1 (fst !case) (snd !case) ; 
                                                                        mauvais_clique:=false;
-                                                                        end ;
+                                                                        end 
+                              else  begin fait_case (dim_cote*(fst !case)+x0) (dim_cote* (snd !case)+y0) coul_cadre coul_erreur ; sound 160 40; fait_case (dim_cote*(fst !case)+x0) (dim_cote* (snd !case)+y0) coul_cadre coul_fond;  end;
                            end;
                        end;
             end;
     end else affiche_case plateau (fst !case) (snd !case);
 done;;
-
-(*********************Fonction du jeu*)
-let test ()=
+ (*Fonctions de manipulation du plateau************************************************)
+(*Réinisialisation du plateau*)
+let init ()=
+for i=0 to (dim_nbcase-1) do
+for j=0 to (dim_nbcase-1) do
+    Plateau.(i).(j)<-Vide
+done; done;
+Plateau.(3).(3)<-Noir ;
+Plateau.(4).(4)<-Noir ;
+Plateau.(3).(4)<-Blanc ;
+Plateau.(4).(3)<-Blanc ;;
+(*Fonction du jeu*)
+let othello_2joueurs ()=
 open_graph "";
 close_graph ();
 open_graph "800x600+200+100";
@@ -245,7 +258,27 @@ affiche_tour !tour ;
 affiche_score Plateau;
 cliquer Plateau !tour (coup Plateau !tour) ;
 done ;
+  affiche_plateau Plateau ;
+affiche_score Plateau;
+if (snd (victoire Plateau))<>Vide then begin
+                                                          set_color black;
+                                                 moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 100);
+                                                         draw_string («Victoire aux     !!!»);                                 
+                                                       if (snd (victoire Plateau))=Noir then
+                                                               begin          
+                                                               set_color coul_noir;
+                           fill_rect  (x0+dim_nbcase*dim_cote+120) (y0+dim_nbcase*dim_cote- 100) 15 15; end
+                                                       else begin          
+                                                               set_color coul_blanc;
+                         fill_rect  (x0+dim_nbcase*dim_cote+120) (y0+dim_nbcase*dim_cote- 100) 15 15; end;
+                          end
+else  begin
+         set_color black;
+         moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 40);
+         draw_string (« Il y a égalité !!!  »)
+        end;                                                  
+let a=wait_next_event[Key_pressed] in
 close_graph();;
 
-test() ;;
+othello_2joueurs () ;;
 
