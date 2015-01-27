@@ -35,6 +35,7 @@ Plateau.(3).(3)<-Noir ;;
 Plateau.(4).(4)<-Noir ;;
 Plateau.(3).(4)<-Blanc ;;
 Plateau.(4).(3)<-Blanc ;;
+let temps=ref 0;;
 
 (*Fonctions de représentations du plateau**********************************************)
 (*Dessin des cases du plateau*)
@@ -82,6 +83,13 @@ let rec affiche_pas_coup = function
 let rec dans = fun
 |a []-> false
 |a (b::l)->a=b || (dans a l) ;;
+(*Mélange d’une liste*)
+let melange l =
+let rec aux = fun
+|[] l2-> l2
+|[a] l2->a::l2
+|(a::b::lf) l2->if (random__int 2)=0 then b::a::(aux lf l2) else a::b::(aux lf l2) in
+aux l [];;  
 (*Possibilité d’une ligne*)
 let ligne plateau coul1 i j k l=
 let coul2=ref Noir in if coul1=Noir then coul2:=Blanc;
@@ -115,7 +123,7 @@ let rec aux = fun
 |7 7-> if (possible plateau coul1 7 7) then [(7,7)] else []
 |i 7-> if (possible plateau coul1 i 7) then (i,7)::(aux (i+1) 0) else (aux (i+1) 0)
 |i j -> if (possible plateau coul1 i j) then (i,j)::(aux i (j+1)) else (aux i (j+1))       in
-aux 0 0;;   
+melange (aux 0 0);;   
 (*Calcul du score*)
 let score plateau=
 let b,n=ref 0,ref 0 in
@@ -150,8 +158,13 @@ let fait_ligne coul1 coul2 i  j k l=
 if (ligne Plateau coul1 i j k l) then begin
 let i2,j2=ref k, ref l in
 Plateau.(i).(j)<-coul1;
+affiche_plateau Plateau;
+sound 0 (!temps*200);
 while Plateau.(!i2).(!j2)=coul2 do
 Plateau.(!i2).(!j2)<-coul1;
+affiche_plateau Plateau;
+sound 6000 20;
+sound 0 (!temps*150);
 i2:= !i2 +k-i; j2:= !j2 +l-j;
 done; end;;
 (*Application d’un coup*)
@@ -236,16 +249,16 @@ done;;
 (*Fonctions de manipulation du plateau************************************************)
 (*Animation du cpu*)
 let clignote i j coul=
-for k=0 to 4 do
+for k=0 to 2 do
 fait_case (dim_cote*i+x0) (dim_cote* j+y0) coul_cadre coul_coup ;
-sound 0 200;
+sound 0 ( !temps*150);
 fait_case (dim_cote*i+x0) (dim_cote* j+y0) coul_cadre coul_fond;
-sound 0 200;
+sound 0 (!temps*150);
 done ;
 if coul=Blanc then (fait_pion (dim_cote*i+x0) (dim_cote* j+y0) coul_cadre coul_fond coul_blanc)
                          else (fait_pion (dim_cote*i+x0) (dim_cote* j+y0) coul_cadre coul_fond coul_noir) ;
 sound 6000 20;
-sound 0 250;;
+sound 0 ( !temps*150);;
 (*IA de niveau 1***************************************************)
  (*Compte des points d’une ligne*)
 let compte_ligne coul1 coul2 i  j k l=
@@ -280,11 +293,6 @@ fait_coup plateau coul1 i j ;;
 let case_IA2 plateau coul1=
 let coul2=ref Noir in if coul1=Noir then coul2:=Blanc;
 let coups=(coup plateau coul1) in
-let rec aux = fun
-|a (k,l) []->(a,k,l)
-|a (k,l) ((i,j)::lf)->let b=(compte_coup plateau coul1 i j) in
-                           if a<b then (aux b (i,j) lf) else (aux a (k,l) lf)  in
-let (a,i,j)=(aux 0 (-1,-1) coups) in
 let rec aux2 = fun
 |_ _ ((0,0)::lf)->(true,0,0)
 |_ _ ((7,7)::lf)->(true,7,7)
@@ -295,8 +303,30 @@ let rec aux2 = fun
                                                                            let b=(compte_coup plateau coul1 i j) in
                                if a<b then (aux2 b (k,l) lf) else (aux2 a (i,j) lf) end
                                else (aux2 a (i,j) lf) in
-let (bien,k,l)= (aux2 0 (-1,-1) coups) in
-if bien && a<5 then fait_coup plateau coul1 k l else fait_coup plateau coul1 i j ;;
+let (bien,k,l)= (aux2 1 (hd coups) coups) in
+clignote k l coul1 ;
+fait_coup plateau coul1 k l ;;
+(*IA de niveau 3***************************************************)
+(*Choix du coup*)
+let case_IA3 plateau coul1=
+let coul2=ref Noir in if coul1=Noir then coul2:=Blanc;
+let rec aux = fun
+|l []->l
+|l ((i,j)::lf)->let a=(compte_coup plateau coul1 i j) in
+                      aux ((a,i,j)::l) lf  in
+let coups2=(aux [] (coup plateau coul1)) in
+let rec aux2 = fun
+|l []->l
+|l ((a,i,j)::lf)->if ((i=0 || i=7 )&&(j=0 || j=7)) then aux2 ((a+99,i,j)::l) lf 
+                 else if (i=0 || i=7 || j=0 || j=7) then aux2 ((a+3,i,j)::l) lf
+                 else aux2 ((a,i,j)::l) lf in
+let coups3=(aux2 [] coups2) in
+let rec aux3= fun
+|(a,i,j) []->(i,j)
+|(a,i,j) ((b,k,l)::lf)-> if a<b then aux3 (b,k,l) lf else aux3 (a,i,j) lf in
+let (a,i,j)=aux3 coups3 in
+clignote i j coul1 ;
+fait_coup plateau coul1 i j ;;
 (*Fonctions de manipulation du plateau************************************************)
 (*Réinisialisation du plateau*)
 let init ()=
@@ -308,43 +338,13 @@ Plateau.(3).(3)<-Noir ;
 Plateau.(4).(4)<-Noir ;
 Plateau.(3).(4)<-Blanc ;
 Plateau.(4).(3)<-Blanc ;;
-(*Fonction du jeu*)
-let othello_2joueurs ()=
-open_graph "";
-close_graph ();
-open_graph "800x600+200+100";
-let tour=ref Noir in
-while not (fst (victoire Plateau)) do
-if !tour=Noir then tour:=Blanc else tour:=Noir;
-if (coup Plateau !tour)=[] then if !tour=Noir then tour:=Blanc else tour:=Noir;
-affiche_tour !tour ;
-  affiche_plateau Plateau ;
-affiche_score Plateau;
-cliquer Plateau !tour (coup Plateau !tour) ;
-done ;
-  affiche_plateau Plateau ;
-affiche_score Plateau;
-if (snd (victoire Plateau))<>Vide then begin
-                                                          set_color black;
-                                                 moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 100);
-                                                         draw_string («Victoire aux     !!!»);                                 
-                                                       if (snd (victoire Plateau))=Noir then
-                                                               begin          
-                                                               set_color coul_noir;
-                           fill_rect  (x0+dim_nbcase*dim_cote+120) (y0+dim_nbcase*dim_cote- 100) 15 15; end
-                                                       else begin          
-                                                               set_color coul_blanc;
-                         fill_rect  (x0+dim_nbcase*dim_cote+120) (y0+dim_nbcase*dim_cote- 100) 15 15; end;
-                          end
-else  begin
-         set_color black;
-         moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 40);
-         draw_string (« Il y a égalité !!!  »)
-        end;                                                  
-let a=wait_next_event[Key_pressed] in
-close_graph();;
-(*Fonction du jeu*)
+ (*Fonction du jeu*)
 type joueur= H | IA1 | IA2 ;;
+
+let Joe= IA1 ;
+let Moi= H ;
+let Henry= IA2;
+
 let othello joueur1 joueur2=
 open_graph "";
 close_graph ();
