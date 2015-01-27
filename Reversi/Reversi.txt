@@ -234,6 +234,18 @@ else if plateau.(fst !case).(snd !case)=Blanc then
     end else affiche_case plateau (fst !case) (snd !case);
 done;;
 (*Fonctions de manipulation du plateau************************************************)
+(*Animation du cpu*)
+let clignote i j coul=
+for k=0 to 4 do
+fait_case (dim_cote*i+x0) (dim_cote* j+y0) coul_cadre coul_coup ;
+sound 0 200;
+fait_case (dim_cote*i+x0) (dim_cote* j+y0) coul_cadre coul_fond;
+sound 0 200;
+done ;
+if coul=Blanc then (fait_pion (dim_cote*i+x0) (dim_cote* j+y0) coul_cadre coul_fond coul_blanc)
+                         else (fait_pion (dim_cote*i+x0) (dim_cote* j+y0) coul_cadre coul_fond coul_noir) ;
+sound 6000 20;
+sound 0 250;;
 (*IA de niveau 1***************************************************)
  (*Compte des points d’une ligne*)
 let compte_ligne coul1 coul2 i  j k l=
@@ -261,9 +273,30 @@ let rec aux = fun
 |a (k,l) ((i,j)::lf)->let b=(compte_coup plateau coul1 i j) in
                            if a<b then (aux b (i,j) lf) else (aux a (k,l) lf)  in
 let (i,j)=(aux 0 (-1,-1) (coup plateau coul1)) in
+clignote i j coul1 ;
 fait_coup plateau coul1 i j ;;
-
-
+(*IA de niveau 2***************************************************)
+(*Choix du coup*)
+let case_IA2 plateau coul1=
+let coul2=ref Noir in if coul1=Noir then coul2:=Blanc;
+let coups=(coup plateau coul1) in
+let rec aux = fun
+|a (k,l) []->(a,k,l)
+|a (k,l) ((i,j)::lf)->let b=(compte_coup plateau coul1 i j) in
+                           if a<b then (aux b (i,j) lf) else (aux a (k,l) lf)  in
+let (a,i,j)=(aux 0 (-1,-1) coups) in
+let rec aux2 = fun
+|_ _ ((0,0)::lf)->(true,0,0)
+|_ _ ((7,7)::lf)->(true,7,7)
+|_ _ ((0,7)::lf)-> (true,0,7)
+|_ _ ((7,0)::lf)-> (true,7,0)
+|a (i,j) []->((i=0 || i=7 || j=0 || j=7),i,j)
+|a (i,j) ((k,l)::lf)->if (k=0 || k=7 || l=0 || l=7) then begin
+                                                                           let b=(compte_coup plateau coul1 i j) in
+                               if a<b then (aux2 b (k,l) lf) else (aux2 a (i,j) lf) end
+                               else (aux2 a (i,j) lf) in
+let (bien,k,l)= (aux2 0 (-1,-1) coups) in
+if bien && a<5 then fait_coup plateau coul1 k l else fait_coup plateau coul1 i j ;;
 (*Fonctions de manipulation du plateau************************************************)
 (*Réinisialisation du plateau*)
 let init ()=
@@ -311,7 +344,8 @@ else  begin
 let a=wait_next_event[Key_pressed] in
 close_graph();;
 (*Fonction du jeu*)
-let othello_IA1 ()=
+type joueur= H | IA1 | IA2 ;;
+let othello joueur1 joueur2=
 open_graph "";
 close_graph ();
 open_graph "800x600+200+100";
@@ -322,8 +356,16 @@ if (coup Plateau !tour)=[] then if !tour=Noir then tour:=Blanc else tour:=Noir;
 affiche_tour !tour ;
   affiche_plateau Plateau ;
 affiche_score Plateau;
-if !tour=Blanc then cliquer Plateau !tour (coup Plateau !tour) 
-else case_IA1 Plateau !tour ;
+if !tour=Blanc then begin 
+                                   if joueur1=H then cliquer Plateau !tour (coup Plateau !tour) else 
+                                   if joueur1=IA1 then case_IA1 Plateau !tour else 
+                                   if joueur1=IA2 then case_IA2 Plateau !tour ;
+                                   end
+else begin 
+                                   if joueur2=H then cliquer Plateau !tour (coup Plateau !tour) else 
+                                   if joueur2=IA1 then case_IA1 Plateau !tour  else
+                                   if joueur2=IA2 then case_IA2 Plateau !tour ;
+                                   end;
 done ;
   affiche_plateau Plateau ;
 affiche_score Plateau;
@@ -347,4 +389,4 @@ else  begin
 let a=wait_next_event[Key_pressed] in
 close_graph();;
 
-othello_IA1 ();;
+othello H IA1;;
