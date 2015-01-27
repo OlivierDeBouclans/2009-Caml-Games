@@ -324,7 +324,33 @@ let coups3=(aux2 [] coups2) in
 let rec aux3= fun
 |(a,i,j) []->(i,j)
 |(a,i,j) ((b,k,l)::lf)-> if a<b then aux3 (b,k,l) lf else aux3 (a,i,j) lf in
-let (a,i,j)=aux3 coups3 in
+let (i,j)=aux3 (0,-1,-1) coups3 in
+clignote i j coul1 ;
+fait_coup plateau coul1 i j ;;
+(*Choix du coup*)
+let case_IA4 plateau coul1=
+let coul2=ref Noir in if coul1=Noir then coul2:=Blanc;
+let rec aux = fun
+|l []->l
+|l ((i,j)::lf)->let a=(compte_coup plateau coul1 i j) in
+                      aux ((a,i,j)::l) lf  in
+let coups2=(aux [] (coup plateau coul1)) in
+let rec aux2 = fun
+|l []->l
+|l ((a,i,j)::lf)->if ((i=0 || i=7 )&&(j=0 || j=7)) then aux2 ((a+99,i,j)::l) lf 
+                 else if (i=0 || i=7 || j=0 || j=7) then aux2 ((a+3,i,j)::l) lf
+                 else aux2 ((a,i,j)::l) lf in
+let coups3=(aux2 [] coups2) in
+let rec aux3 = fun
+|l []->l
+|l ((a,i,j)::lf)->if ((i=1 || i=6 )&&(j=1 || j=6)) then aux3 ((a-99,i,j)::l) lf 
+                 else if (i=1 || i=6 || j=1 || j=6) then aux3 ((a-3,i,j)::l) lf
+                 else aux3 ((a,i,j)::l) lf in
+let coups4=(aux3 [] coups3) in
+let rec aux4= fun
+|(a,i,j) []->(i,j)
+|(a,i,j) ((b,k,l)::lf)-> if a<b then aux4 (b,k,l) lf else aux4 (a,i,j) lf in
+let (i,j)=aux4 (0,-1,-1) coups4 in
 clignote i j coul1 ;
 fait_coup plateau coul1 i j ;;
 (*Fonctions de manipulation du plateau************************************************)
@@ -339,11 +365,13 @@ Plateau.(4).(4)<-Noir ;
 Plateau.(3).(4)<-Blanc ;
 Plateau.(4).(3)<-Blanc ;;
  (*Fonction du jeu*)
-type joueur= H | IA1 | IA2 ;;
+type joueur= H | IA1 | IA2 | IA3 | IA4;;
 
-let Joe= IA1 ;
-let Moi= H ;
-let Henry= IA2;
+let Joe= IA1 ;;
+let Moi= H ;;
+let Henry= IA2;;
+let Luc = IA3;;
+let Albert = IA4;; 
 
 let othello joueur1 joueur2=
 open_graph "";
@@ -359,12 +387,17 @@ affiche_score Plateau;
 if !tour=Blanc then begin 
                                    if joueur1=H then cliquer Plateau !tour (coup Plateau !tour) else 
                                    if joueur1=IA1 then case_IA1 Plateau !tour else 
-                                   if joueur1=IA2 then case_IA2 Plateau !tour ;
+                                   if joueur1=IA2 then case_IA2 Plateau !tour else 
+                                   if joueur1=IA3 then case_IA3 Plateau !tour else 
+                                   if joueur1=IA4 then case_IA4 Plateau !tour ;
                                    end
 else begin 
                                    if joueur2=H then cliquer Plateau !tour (coup Plateau !tour) else 
                                    if joueur2=IA1 then case_IA1 Plateau !tour  else
-                                   if joueur2=IA2 then case_IA2 Plateau !tour ;
+                                   if joueur2=IA2 then case_IA2 Plateau !tour else 
+                                   if joueur2=IA3 then case_IA3 Plateau !tour else 
+                                   if joueur2=IA4 then case_IA4 Plateau !tour ;
+
                                    end;
 done ;
   affiche_plateau Plateau ;
@@ -383,10 +416,10 @@ if (snd (victoire Plateau))<>Vide then begin
                           end
 else  begin
          set_color black;
-         moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 40);
+         moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 100);
          draw_string (« Il y a égalité !!!  »)
         end;                                                  
 let a=wait_next_event[Key_pressed] in
 close_graph();;
 
-othello H IA1;;
+othello H IA3;;
