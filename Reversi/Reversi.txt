@@ -1,0 +1,75 @@
+(*Modules: ouverture des modules nécessaires******************************************)
+#open "graphics";;
+#open "random";;
+
+(*Variables: déclaration des constantes et des types**************************************)
+(*Type des cases*)
+type case = Noir | Blanc | Vide;;
+(*Couleurs du plateau*)
+(*couleur des cadres des cases du tableau*)(*noir*)
+let coul_cadre=rgb 0 0 0;;                  
+(*couleur du fond des cases du tableau*)(*vert foncé*)
+let coul_fond=rgb 0 128 0;;               
+(*couleur des reflets des pions*)(*blanc*)
+let coul_reflet= rgb 255 255 255;;    
+(*couleur des pions*) (*blanc-gris*)(*noir*)
+let coul_blanc=rgb 223 218 207;;      
+let coul_noir=rgb 0 0 0;;                      
+(*Coordonnées de référence*)
+let x0,y0=30,30;;
+(*Dimension de référence*)
+let dim_cote=60;;
+let dim_rayon=(4*dim_cote)/(2*5) ;;
+let dim_nbcase=8;;
+(*Plateau de jeu*)
+let Plateau = make_matrix dim_nbcase dim_nbcase Vide;;
+Plateau.(0).(0)<-Noir ;;
+Plateau.(7).(7)<-Blanc ;;
+
+(*Fonctions de représentations du plateau**********************************************)
+(*Dessin des cases du plateau*)
+let fait_case x y coul_cadre coul_fond=
+set_color coul_cadre;
+  moveto x y;
+  lineto (x+dim_cote) y;
+  lineto (x+dim_cote)  (y+dim_cote);
+  lineto x (y+dim_cote);
+lineto x y;
+set_color coul_fond;
+  fill_rect (x+1) (y+1) (dim_cote-2) (dim_cote-2);;	
+(*Affichage de la case (i,j) *)
+let affiche_case plateau i j=
+let x,y=((j*dim_cote+x0),(i*dim_cote+y0)) in
+     if plateau.(i).(j)=Vide then  fait_case x y  coul_cadre coul_fond
+else if plateau.(i).(j)=Noir  then  begin
+                                                         fait_case x y  coul_cadre coul_fond ;
+                                                         set_color coul_noir ;
+                                                         fill_circle (x+ dim_cote/2)  (y+dim_cote/2) dim_rayon ;
+                                                         set_color coul_reflet ;
+                                                         draw_circle (x+ dim_cote/2)  (y+dim_cote/2) (dim_rayon-2) ;  
+                                                         end
+else if plateau.(i).(j)=Blanc  then  begin
+                                                         fait_case x y  coul_cadre coul_fond ;
+                                                         set_color coul_blanc ;
+                                                         fill_circle (x+ dim_cote/2)  (y+dim_cote/2) dim_rayon ; 
+                                                         set_color coul_reflet ;
+                                                         draw_circle (x+ dim_cote/2)  (y+dim_cote/2) (dim_rayon-2) ;  
+                                                         end;;
+(*Affichage du plateau entier*)
+let affiche_plateau plateau=
+for i=0 to (vect_length plateau-1) do
+for j=0 to (vect_length plateau.(0)-1) do
+  affiche_case plateau i j;
+done;
+done;;
+
+
+
+(*********************Fonction du jeu*)
+let test ()=
+open_graph "800x600+200+100";
+  affiche_plateau Plateau ;
+let a=wait_next_event[Button_down] in ();
+close_graph();;
+
+test() ;;
