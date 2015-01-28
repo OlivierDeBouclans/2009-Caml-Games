@@ -141,16 +141,16 @@ set_color coul_noir;
 fill_rect (x0+dim_nbcase*dim_cote+3) (y0+dim_nbcase*dim_cote -45) 100 20;
 set_color coul_noir;
 moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 20);
-draw_string ((string_of_int b)^“ blanc(s)”);
+draw_string ((string_of_int b)^"blanc(s)");
 moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote-45);
-draw_string ((string_of_int n)^“ noir(s) ”);;
+draw_string ((string_of_int n)^"noir(s)");;
 (*Affichage du tour*)
 let affiche_tour coul=
 let couleur=ref coul_blanc in
 if coul=Noir then couleur :=  coul_noir ;
 set_color coul_noir;
 moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 70);
-draw_string (“C’est aux »);
+draw_string ("C’est aux ");
 set_color !couleur;
 fill_rect  (x0+dim_nbcase*dim_cote+90) (y0+dim_nbcase*dim_cote- 69) 15 15;; 
  (*Application d’une ligne *)
@@ -223,7 +223,7 @@ else if plateau.(fst !case).(snd !case)=Blanc then
                                                                                                         end
                                                                   else begin
                                                                           close_graph();
-                                                                          failwith « Merci d’avoir joué » ;
+                                                                          failwith " Merci d’avoir joué " ;
                                                                           end;
                                                                   end 
                 (*Si on clique sur une valide*)
@@ -405,7 +405,7 @@ affiche_score Plateau;
 if (snd (victoire Plateau))<>Vide then begin
                                                           set_color black;
                                                  moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 100);
-                                                         draw_string («Victoire aux     !!!»);                                 
+                                                         draw_string ("Victoire aux     !!!");                                 
                                                        if (snd (victoire Plateau))=Noir then
                                                                begin          
                                                                set_color coul_noir;
@@ -417,7 +417,7 @@ if (snd (victoire Plateau))<>Vide then begin
 else  begin
          set_color black;
          moveto (x0+dim_nbcase*dim_cote+10) (y0+dim_nbcase*dim_cote- 100);
-         draw_string (« Il y a égalité !!!  »)
+         draw_string (" Il y a égalité !!!  ")
         end;                                                  
 let a=wait_next_event[Key_pressed] in
 close_graph();;

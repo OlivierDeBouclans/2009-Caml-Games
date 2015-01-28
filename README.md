@@ -1,19 +1,19 @@
-# Caml Games: Breakout, Minesweeper and Reversi
+﻿# Caml Games: Breakout, Minesweeper and Reversi
 
 ![2015-01-27_22h27_59](https://cloud.githubusercontent.com/assets/10437041/5927873/3aab0a44-a676-11e4-85d1-c4888c5ef551.png)
 
 *  Click here to watch a [short demonstration video](http://youtu.be/vGz4a0TpPSU) on the Breakout game
-*  Click here to see the [commented version]() (in french [here]() ) on the Breakout game
+*  Click here to see the [commented version](http://youtu.be/wlOt6JpexoM) (in french [here](http://youtu.be/LD_GZ1JWaEA) ) on the Breakout game
 
 ![2015-01-27_22h37_00](https://cloud.githubusercontent.com/assets/10437041/5927876/3ab0cede-a676-11e4-9332-d24b531314c9.png)
 
 *  Click here to watch a [short demonstration video]( http://youtu.be/Uav7vnWjl8w) on the Minesweeper game
-*  Click here to see the [commented version]() (in french [here]() ) on the Minesweeper game
+*  Click here to see the [commented version](http://youtu.be/wSZC3ZyAF3k) (in french [here](http://youtu.be/_CUyMi8b31U) ) on the Minesweeper game
 
 ![2015-01-27_22h39_33](https://cloud.githubusercontent.com/assets/10437041/5927880/3ac873ea-a676-11e4-838e-5cac9d95c7a5.png)
 
 *  Click here to watch a [short demonstration video](http://youtu.be/IrptPMwwKO0) on the Reversi game
-*  Click here to see the [commented version]() (in french [here]() ) on the Reversi game
+*  Click here to see the [commented version](http://youtu.be/xfGlxHdadtc) (in french [here](http://youtu.be/nwX3ZYdrvzI) ) on the Reversi game
 
 *  Feel free to download the [demo version](https://github.com/OlivierDeBouclans/2009-Caml-Games/raw/master/TryMe-CamlGames.rar) of all three games.
 
