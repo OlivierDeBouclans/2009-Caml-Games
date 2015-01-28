@@ -49,12 +49,6 @@ If you want to try these games, you have to install the Camel Light software inc
 
 I regret that I didn’t have enough time to go deeper in the reverse AI. As I didn’t know the deep strategy of the game, I just implemented simple behaviors, based on simple assertions. So the AI is quite easy to beat.
 
----
-
-#### Note
-
-As it was my first program, it’s of course full of terrible mistakes like memory loss (plus freeing local variables…) or awful design. Nonetheless the program is fully finished with highscore, option and no bugs (or at least no obvious ones)
-
 ##Images
 
 ![2015-01-27_22h29_42](https://cloud.githubusercontent.com/assets/10437041/5927874/3aade58e-a676-11e4-9310-f0e40b1540d9.png)
