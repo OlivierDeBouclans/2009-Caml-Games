@@ -15,7 +15,8 @@
 *  Click here to watch a [short demonstration video](http://youtu.be/IrptPMwwKO0) on the Reversi game
 *  Click here to see the [commented version](http://youtu.be/xfGlxHdadtc) (in french [here](http://youtu.be/nwX3ZYdrvzI) ) on the Reversi game
 
-*  Feel free to download the [demo version](https://github.com/OlivierDeBouclans/2009-Caml-Games/raw/master/TryMe-CamlGames.rar) of all three games.
+
+Feel free to download the [demo version](https://github.com/OlivierDeBouclans/2009-Caml-Games/raw/master/TryMe-CamlGames.rar) of all three games.
 
 ---
 
