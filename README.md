@@ -3,7 +3,7 @@
 ![2015-01-27_22h27_59](https://cloud.githubusercontent.com/assets/10437041/5927873/3aab0a44-a676-11e4-85d1-c4888c5ef551.png)
 
 *  Click here to watch a [short demonstration video](http://youtu.be/vGz4a0TpPSU) on the Breakout game
-*  Click here to see the [commented version](http://youtu.be/wlOt6JpexoM) (in french [here](http://youtu.be/LD_GZ1JWaEA) ) on the Breakout game
+*  Click here to see the [commented version](http://youtu.be/LD_GZ1JWaEA) (in french [here](http://youtu.be/wlOt6JpexoM) ) on the Breakout game
 
 ![2015-01-27_22h37_00](https://cloud.githubusercontent.com/assets/10437041/5927876/3ab0cede-a676-11e4-9332-d24b531314c9.png)
 
